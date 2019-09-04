@@ -177,9 +177,9 @@ t.test(predict(modelSelected,data=finalDB),finalDB[,7])
 
 **findings**
 
-**Does the slghtly higher predicted rating caused by we only use users who have viewed all 5 previous movies as data source to traing the model?**
+**1. Does the slghtly higher predicted rating caused by we only use users who have viewed all 5 previous movies as data source to traing the model?**
 
-**Maybe those people are into this movie genre so that they tend to rate Cars3 higher too.**
+**M2. aybe those people are into this movie genre so that they tend to rate Cars3 higher too.**
 
 ## Part 3: Check whether fill NA record with average number could imporve prediction accuracy
 ### compare ratings from people who have & haven't rate all 6 movies
