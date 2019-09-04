@@ -73,8 +73,11 @@ finalDBMeans
 |toyStory1|toyStory2|cars1   |toyStory3|cars2   |cars3   |
 |---------|---------|--------|---------|--------|--------|
 |3.886649 |3.809977 |3.347277|3.870090 |2.805595|3.128425| 
+
 **findings:**
+
 **1. In gernal Toy Story collection has a higher rating**
+
 **2. ToyStory1 rated the highest and Cars3 rated the lowest**
 
 ### check correlations among movie ratings
@@ -93,8 +96,11 @@ cor(x,y,use="pairwise.complete.obs")
 |cars3    |0.4119281|0.3800859|0.7421214|0.3699212|0.7065726|1.0000000|
 
 **findings:**
+
 **1. movies within the same collection have a higher correlation**
+
 **2. toyStory1 and toyStory2 are most similar, correlation around 0.75**
+
 **3. toyStory1 and cars2 are most different, correlation around 0.28**
 
 
@@ -168,8 +174,11 @@ mean(finalDB[,7],na.rm = T)
 t.test(predict(modelSelected,data=finalDB),finalDB[,7])
 # p-value = 0.6944  predicted and actual ratings don't have significant difference
 ```
+
 **findings**
+
 **Does the slghtly higher predicted rating caused by we only use users who have viewed all 5 previous movies as data source to traing the model?**
+
 **Maybe those people are into this movie genre so that they tend to rate Cars3 higher too.**
 
 ## Part 3: Check whether fill NA record with average number could imporve prediction accuracy
@@ -210,7 +219,9 @@ t.test(RatingAll6[,7],notRatingAll6[,7]) #p-value = 0.583
 ```
 
 **finding:**
+
 **1. The rating difference among those 2 user group for ToyStory1 and Cars1 are statistics significant**
+
 **2. Ratings are not statistics significant for the other 4 movies**
 
 plot out to have a better overview
@@ -280,6 +291,9 @@ result2[which.min(result2$MSE),]
 # cars3 ~ toyStory1+I(toyStory2^2)+cars1+I(toyStory3^2)+cars2+I(cars3^2) 
 # MSEmin = 0.03329003
 ```
+
 **findings**
+
 **1. result2's AIC, BIC, and MSE are larger than result1's**
+
 **2. filling NA with mean will lead to larger variance compared with dropping NA records**
