@@ -1,4 +1,9 @@
 # Cars3 Movie Rating Prediction
+
+
+![](images/poster.JPG)
+
+
 Use around 80,000 existing users' ratings of Toy Story and Cars movies
 
 Build predictive model to predict individual user's ratings for cars3 given their ratings for the previous 5 movies (toyStory1, toyStory2, cars1, toyStory3, cars2)
@@ -18,7 +23,8 @@ allSix <- subset(ratings, ratings$movieId %in% c(1,3114,45517,78499,87876,170957
 # grab toyStory1, toyStory2, cars1, toyStory3, cars2, cars3 raings from data source
 View(allSix)
 ```
-### picture of view(allSix)
+
+![](images/allSix.png)
 
 ### data re-organize
 ```
@@ -67,7 +73,9 @@ for (i in unique(cars3Subset$userId)){
 View(finalDB)
 save.image(file="animatedMovie.Rdata")
 ```
-### picture of View(finalDB)
+
+![](images/finalDB.png)
+
 
 ### check the average ratings for each movie
 ```
@@ -151,7 +159,9 @@ for(i in unique(formulaSet)){
 
 View(result)
 ```
-### picture of View(result)
+
+![](images/result.png)
+
 ```
 result[which.min(result$AIC),]
 # formulaSet 52
@@ -245,7 +255,8 @@ p <- ggplot(MeansLF, aes(y = mean, x = group,fill = table)) +
   ylim(0,5)
 p
 ```
-# picture of p plot
+
+![](images/p.png)
 
 
 ### How about fill NA records with the movie's mean ratings from notRatingAll6, will it improve the model's accuracy?
@@ -278,7 +289,9 @@ for(i in unique(formulaSet)){
 
 View(result2)
 ```
-# picture of View(result2)
+
+![](images/result2.png)
+
 
 ```
 result2[which.min(result2$AIC),]
