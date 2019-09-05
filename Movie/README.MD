@@ -3,9 +3,10 @@ Use around 80,000 existing users' ratings of Toy Story and Cars movies
 
 Build predictive model to predict individual user's ratings for cars3 given their ratings for the previous 5 movies (toyStory1, toyStory2, cars1, toyStory3, cars2)
 
-Data source: Full MovieLens Dataset https://grouplens.org/datasets/movielens/latest/
 
-27,000,000 ratings and 1,100,000 tag applications applied to 58,000 movies by 280,000 users. Last updated 9/2018.
+_Data source: Full MovieLens Dataset https://grouplens.org/datasets/movielens/latest/_
+
+_27,000,000 ratings and 1,100,000 tag applications applied to 58,000 movies by 280,000 users. Last updated 9/2018._
 _the original data source are too big to upload to the project, please use "animatedMovie.Rdata" to test_
 
 ## Part 1: Exploratory Analysis
