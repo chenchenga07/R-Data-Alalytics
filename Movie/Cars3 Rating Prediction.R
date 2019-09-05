@@ -149,7 +149,7 @@ result[which.min(result$BIC),]
 # BICmin = -24.13003
 
 result[which.min(result$MSE),]
-# formulaSet 52     
+# formulaSet 47     
 # cars3 ~ I(toyStory1^2)+I(toyStory2^2)+cars1+toyStory3+I(cars2^2)+I(cars3^2)
 # MSEmin = 0.01315301
 
@@ -211,6 +211,7 @@ MeansLF <- gather(Means, table, mean, RatingAll6Means:notRatingAll6Means)
 #Create long format
 View(MeansLF)
 
+library(ggplot2)
 p <- ggplot(MeansLF, aes(y = mean, x = group,fill = table)) +
   geom_bar(position = "dodge",stat = "identity")+
   labs(x="Movie",y="Average Ratings")+
