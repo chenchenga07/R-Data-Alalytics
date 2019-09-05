@@ -1,16 +1,21 @@
-# Toy Story 4 rating predcition
+# Cars3 Movie Rating Prediction
 
-# using around 80,000 existing users' ratings towards 6 Toy Story and Cars movies
-# predict individual user's ratings for cars3 given their ratings of previous 5 movies
 
-## load data source
+# Use around 80,000 existing users' ratings of Toy Story and Cars movies
+# Build predictive model to predict individual user's ratings for cars3 given their ratings for the previous 5 movies
+# _the original data source are too big to upload, please use "animatedMovie.Rdata" to test_
+
+## Part 1: Exploratory Analysis
+### load data source
+
 getwd()
 ratings <- read.csv("./Movie/ratings.csv", stringsAsFactors=FALSE)
 
 allSix <- subset(ratings, ratings$movieId %in% c(1,3114,45517,78499,87876,170957))
-str(allSix) # 123225 obs.
+# grab toyStory1, toyStory2, cars1, toyStory3, cars2, cars3 raings from data source
+View(allSix)
 
-## data re-organize
+### data re-organize
 uniqueUser <- length(unique(allSix$userId))
 # 80734 unique userID
 
@@ -59,7 +64,7 @@ save.image(file="animatedMovie.Rdata")
 
 
 
-## exploratory analysis
+### check the average ratings for each movie
 
 finalDBMeans <- colMeans(finalDB[,2:7],na.rm=TRUE)
 finalDBMeans
@@ -67,6 +72,12 @@ finalDBMeans
 # toyStory1 toyStory2     cars1 toyStory3     cars2     cars3 
 # 3.886649  3.809977  3.347277  3.870090  2.805595  3.128425 
 
+# **findings:**
+#   **1. In gernal Toy Story collection has a higher rating**
+#   **2. ToyStory1 rated the highest and Cars3 rated the lowest**
+
+
+### check correlations among movie ratings
 x=finalDB[,2:7]
 y=finalDB[,2:7]
 cor(x,y,use="pairwise.complete.obs")
@@ -79,13 +90,13 @@ cor(x,y,use="pairwise.complete.obs")
 # cars2     0.2813384 0.3636317 0.7187948 0.3499898 1.0000000 0.7065726
 # cars3     0.4119281 0.3800859 0.7421214 0.3699212 0.7065726 1.0000000
 
-# movies within the same collection have a higher correlation
-# toyStory1 and toyStory2 are most similar, correlation around 0.75
-# toyStory1 and cars2 are most different, correlation around 0.28
-
-
-
-## predictive modeling
+# **findings:**
+#   **1. movies within the same collection have a higher correlation**
+#   **2. toyStory1 and toyStory2 are most similar, correlation around 0.75**
+#   **3. toyStory1 and cars2 are most different, correlation around 0.28**
+   
+  
+## Part2: Predictive Modeling
 TS1Vec = c('toyStory1','I(toyStory1^2)') 
 TS2Vec = c('toyStory2','I(toyStory2^2)') 
 c1Vec = c('cars1','I(cars1^2)') 
@@ -128,18 +139,18 @@ for(i in unique(formulaSet)){
 View(result)
 
 result[which.min(result$AIC),]
-#    formulaSet       
-# 52 cars3 ~ I(toyStory1^2)+I(toyStory2^2)+cars1+toyStory3+I(cars2^2)+I(cars3^2)
+# formulaSet 52     
+# cars3 ~ I(toyStory1^2)+I(toyStory2^2)+cars1+toyStory3+I(cars2^2)+I(cars3^2)
 # AICmin = -46.36302
 
 result[which.min(result$BIC),]
-#    formulaSet       
-# 52 cars3 ~ I(toyStory1^2)+I(toyStory2^2)+cars1+toyStory3+I(cars2^2)+I(cars3^2)
+# formulaSet 52    
+# cars3 ~ I(toyStory1^2)+I(toyStory2^2)+cars1+toyStory3+I(cars2^2)+I(cars3^2)
 # BICmin = -24.13003
 
 result[which.min(result$MSE),]
-#    formulaSet       
-# 52 cars3 ~ I(toyStory1^2)+I(toyStory2^2)+cars1+toyStory3+I(cars2^2)+I(cars3^2)
+# formulaSet 52     
+# cars3 ~ I(toyStory1^2)+I(toyStory2^2)+cars1+toyStory3+I(cars2^2)+I(cars3^2)
 # MSEmin = 0.01315301
 
 modelSelected = lm(cars3 ~ I(toyStory1^2)+I(toyStory2^2)+cars1+toyStory3+I(cars2^2)+I(cars3^2),data=finalDB)
@@ -152,15 +163,24 @@ mean(finalDB[,7],na.rm = T)
 t.test(predict(modelSelected,data=finalDB),finalDB[,7])
 # p-value = 0.6944  predicted and actual ratings don't have significant difference
 
-# does the higher predicted rating caused by 
-# we only use users who have viewed all 5 previous movies as data source to traing the model?
-# those people are into this movie genre so that they tent to rate higher
+# **findings**
+#   **1. Does the slghtly higher predicted rating caused by we only use users who have viewed all 5 previous movies as data source to traing the model?**
+#   **2. aybe those people are into this movie genre so that they tend to rate Cars3 higher too.**
+   
 
+## Part 3: Check whether fill NA record with average number could imporve prediction accuracy
 
+### compare ratings from people who have & haven't rate all 6 movies
+RatingAll6 <- 
+  subset(finalDB,
+         !is.na(finalDB[,2])&!is.na(finalDB[,3])&!is.na(finalDB[,4])&
+           !is.na(finalDB[,5])&!is.na(finalDB[,6])&!is.na(finalDB[,7]))
 
+RatingAll6Means <- colMeans(RatingAll6[,2:7])
+RatingAll6Means
+# toyStory1 toyStory2     cars1 toyStory3     cars2     cars3 
+# 4.147059  3.810924  3.600840  3.911765  2.852941  3.168067 
 
-
-# people who don't rate all 6 movies
 notRatingAll6 <- 
   subset(finalDB,
          is.na(finalDB[,2])|is.na(finalDB[,3])|is.na(finalDB[,4])|
@@ -172,16 +192,6 @@ notRatingAll6Means
 # 3.886196  3.809973  3.343629  3.869753  2.801237  3.101156
 
 
-RatingAll6 <- 
-  subset(finalDB,
-         !is.na(finalDB[,2])&!is.na(finalDB[,3])&!is.na(finalDB[,4])&
-           !is.na(finalDB[,5])&!is.na(finalDB[,6])&!is.na(finalDB[,7]))
-
-RatingAll6Means <- colMeans(RatingAll6[,2:7])
-RatingAll6Means
-# toyStory1 toyStory2     cars1 toyStory3     cars2     cars3 
-# 4.147059  3.810924  3.600840  3.911765  2.852941  3.168067 
-
 t.test(RatingAll6[,2],notRatingAll6[,2]) #p-value = 0.0001124 *
 t.test(RatingAll6[,3],notRatingAll6[,3]) #p-value = 0.9897
 t.test(RatingAll6[,4],notRatingAll6[,4]) #p-value = 0.006824 *
@@ -189,9 +199,11 @@ t.test(RatingAll6[,5],notRatingAll6[,5]) #p-value = 0.5373
 t.test(RatingAll6[,6],notRatingAll6[,6]) #p-value = 0.5949
 t.test(RatingAll6[,7],notRatingAll6[,7]) #p-value = 0.583
 
-# the rating difference among those 2 user group for ToyStory1 and Cars1 are statistics significant
+# **finding:**
+#   **1. The rating difference among those 2 user group for ToyStory1 and Cars1 are statistics significant**
+#   **2. Ratings are not statistics significant for the other 4 movies**
 
-# plot out to have an overview
+#   plot out to have a better overview
 group <- c("toyStory1","toyStory2","cars1","toyStory3","cars2","cars3")
 Means <- data.frame(RatingAll6Means,notRatingAll6Means,group)
 library(tidyr)
@@ -210,9 +222,7 @@ p
 
 
 
-# fill NA with mean ratings from notRatingAll6
-# train the prediction model again and check the result
-
+### How about fill NA records with the movie's mean ratings from notRatingAll6, will it improve the model's accuracy?
 finalDBFillNA <- finalDB
 
 finalDBFillNA[which(is.na(finalDBFillNA$toyStory1)==TRUE),2] = mean(notRatingAll6$toyStory1,na.rm = T)
@@ -221,7 +231,7 @@ finalDBFillNA[which(is.na(finalDBFillNA$cars1)==TRUE),4] = mean(notRatingAll6$ca
 finalDBFillNA[which(is.na(finalDBFillNA$toyStory3)==TRUE),5] = mean(notRatingAll6$toyStory3,na.rm = T)
 finalDBFillNA[which(is.na(finalDBFillNA$cars2)==TRUE),6] = mean(notRatingAll6$cars2,na.rm = T)
 
-# train models
+# train and check models
 result2 <- data.frame(formulaSet,AIC,BIC,MSE)
 
 for(i in unique(formulaSet)){ 
@@ -242,15 +252,23 @@ for(i in unique(formulaSet)){
 View(result2)
 
 result2[which.min(result2$AIC),]
-# 59 cars3 ~ toyStory1+I(toyStory2^2)+cars1+I(toyStory3^2)+I(cars2^2)+I(cars3^2)
+# formulaSet 59 
+# cars3 ~ toyStory1+I(toyStory2^2)+cars1+I(toyStory3^2)+I(cars2^2)+I(cars3^2)
 # AICmin = 58.75145
 
 result2[which.min(result2$BIC),]
-# 59 cars3 ~ toyStory1+I(toyStory2^2)+cars1+I(toyStory3^2)+I(cars2^2)+I(cars3^2) 
+# formulaSet 59 
+# cars3 ~ toyStory1+I(toyStory2^2)+cars1+I(toyStory3^2)+I(cars2^2)+I(cars3^2) 
 # BICmin = 88.16548
 
 result2[which.min(result2$MSE),]
-# 43 cars3 ~ toyStory1+I(toyStory2^2)+cars1+I(toyStory3^2)+cars2+I(cars3^2) 
+# formulaSet 43 
+# cars3 ~ toyStory1+I(toyStory2^2)+cars1+I(toyStory3^2)+cars2+I(cars3^2) 
 # MSEmin = 0.03329003
 
-# filling NA with mean will lead to larger variance compared with dropping NA records
+
+# **findings**
+#   **1. result2's AIC, BIC, and MSE are larger than result1's**
+#   **2. filling NA with mean will lead to larger variance compared with dropping NA records**
+
+
