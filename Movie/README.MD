@@ -12,7 +12,7 @@ Build predictive model to predict individual user's ratings for cars3 given thei
 _Data source: Full MovieLens Dataset https://grouplens.org/datasets/movielens/latest/_
 
 _27,000,000 ratings and 1,100,000 tag applications applied to 58,000 movies by 280,000 users. Last updated 9/2018._
-_the original data source are too big to upload to the project, please use "animatedMovie.Rdata" to test_
+_The original data source are too big to upload to the project, please use "animatedMovie.Rdata" to test_
 
 ## Part 1: Exploratory Analysis
 ### load data source
