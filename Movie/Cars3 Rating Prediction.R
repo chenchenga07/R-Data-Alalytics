@@ -9,6 +9,7 @@
 ### load data source
 
 getwd()
+setwd("/Users/chencheng/Desktop/R Review/Github/R")
 ratings <- read.csv("./Movie/ratings.csv", stringsAsFactors=FALSE)
 
 allSix <- subset(ratings, ratings$movieId %in% c(1,3114,45517,78499,87876,170957))
