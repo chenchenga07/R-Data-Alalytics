@@ -64,7 +64,6 @@ print(pca.out)
 summary(pca.out) # check cucumlative proportion 
 plot(pca.out) 
 # check how many components' variances are above 1 / has big drop
-# 3 components
 
 pca.var = pca.out$sdev^2 # create variances from sd
 pca.pve = pca.var/sum(pca.var)
@@ -75,24 +74,26 @@ plot(cumsum(pca.pve)) # visualize
 library(GPArotation)
 library(psych)
 fa.parallel(segmentDataScaled,fa="fa",n.iter=100,main="Scree plots with parallel analysis")
-f1 = fa(segmentDataScaled,rotate="Varimax",nfactors=2)
-plot(f1)
-
-fa1 = factanal(segmentDataScaled,factors=3,rotation="varimax",scores="regression")
-fa1 # check overall factors' loadings, help explain each factor
-head(fa1$scores) # check individual records' loadings
+f1 = fa(segmentDataScaled,rotate="Varimax",nfactors=15)
+f1
 
 
+# k-means segmentation 
 
-
+# define how many clusters should be used
+# pamk() or wss approach
 library(cluster) 
 library(fpc)
 set.seed(123)
 
 wss <- (nrow(segmentDataScaled)-1)*sum(apply(segmentDataScaled,2,var))
-for (i in 2:15) wss[i] <- sum(kmeans(segmentDataScaled,centers=i)$withinss)
-plot(1:15, wss, type="b", xlab="Number of Clusters",ylab="Within groups sum of squares")
+for (i in 1:127) wss[i] <- sum(kmeans(segmentDataScaled,centers=i)$withinss)
+plot(1:127, wss, type="b", xlab="Number of Clusters",ylab="Within groups sum of squares")
 #found 2,3,4 of clusters maybe used in segmentation
+
+
+# use first X principal components to do the clustering
+
 
 #plot
 km1 = kmeans(segmentDataScaled,2,iter.max = 20, nstart=2)
