@@ -80,11 +80,14 @@ plot(cumsum(pca.pve)) # visualize
 # approach 2: factor analysis
 library(GPArotation)
 library(psych)
-fa.parallel(segmentDataScaled,fa="fa",n.iter=100,main="Scree plots with parallel analysis")
+fa.parallel(segmentDataScaled,fa="fa",n.iter=30,main="Scree plots with parallel analysis")
 # sharp breaks in the plot suggest the appropriate number of factors to extract
-# 2 factors
+f1 = fa(segmentDataScaled,rotate="Varimax",nfactors=2)
+plot(f1)
 
-factanal(segmentDataScaled,factors = 2,rotation = "varimax")
+fa1 = factanal(segmentDataScaled,factors = 2,rotation = "varimax", scores = "regression")
+fa1
+head(fa1$scores)
 # factor1 highly related with num_in_hhld, num_of_adults, num_of_children
 # factor2 highly related with genderM, genderF(-)
 
@@ -94,12 +97,12 @@ factanal(segmentDataScaled,factors = 2,rotation = "varimax")
 
 # define how many clusters should be used
 
-# pamk() approach
+# approach 1: pamk()
 pm = pamk(segmentDataScaled,scaling=T, usepam = F, criterion="multiasw")
 pm$nc
 # 2
 
-# wss plot approach
+# approach 2: wss plot 
 library(cluster) 
 library(fpc)
 set.seed(123)
@@ -110,21 +113,20 @@ plot(1:ncol(segmentDataScaled), wss, type="b", xlab="Number of Clusters",ylab="W
 #found 2,3,4 clusters maybe suitable in segmentation
 
 
-# use first X principal components to do the clustering
-# ??????????????
-
+# use first 6 principal components to do the clustering
 
 #plot
-km1 = kmeans(segmentDataScaled,2,iter.max = 20, nstart=2)
-km2 = kmeans(segmentDataScaled,3,iter.max = 20, nstart=2)
-km3 = kmeans(segmentDataScaled,4,iter.max = 20, nstart=2)
+km1 = kmeans(pca.out$x[,1:6],2,iter.max = 20, nstart=2)
+# first 6 components, 2 clusters
+km2 = kmeans(pca.out$x[,1:6],3,iter.max = 20, nstart=2)
+km3 = kmeans(pca.out$x[,1:6],4,iter.max = 20, nstart=2)
 
-clusplot(segmentDataScaled, km1$cluster, color=TRUE, shade=TRUE, labels=2, lines=0)
-plotcluster(segmentDataScaled, km1$cluster)
-clusplot(segmentDataScaled, km2$cluster, color=TRUE, shade=TRUE, labels=2, lines=0)
-plotcluster(segmentDataScaled, km2$cluster)# the clearest one
-clusplot(segmentDataScaled, km3$cluster, color=TRUE, shade=TRUE, labels=2, lines=0)
-plotcluster(segmentDataScaled, km3$cluster)
+clusplot(pca.out$x[,1:6], km1$cluster, color=TRUE, shade=TRUE, labels=2, lines=0)
+plotcluster(pca.out$x[,1:6], km1$cluster)
+clusplot(pca.out$x[,1:6], km2$cluster, color=TRUE, shade=TRUE, labels=2, lines=0)
+plotcluster(pca.out$x[,1:6], km2$cluster)# the clearest one
+clusplot(pca.out$x[,1:6], km3$cluster, color=TRUE, shade=TRUE, labels=2, lines=0)
+plotcluster(pca.out$x[,1:6], km3$cluster)
 
 percsize = paste(1:3," = ",format(km2$size/sum(km2$size)*100,digits=2),"%",sep="")
 pie(km2$size,labels=percsize)
@@ -207,7 +209,8 @@ sum(incomeAllocation$segment_3) # 67439.29
 
 # ????????????????????????????
 # estimate market size
-randomPopulationData$clusterNo = km2$cluster
+randomData=read.csv("./Bank/Random Database.csv", stringsAsFactors=T)
+randomData$clusterNo = km2$cluster
 segmentation1MktShare = nrow(subset(randomPopulationData,randomPopulationData$clusterNo == 1))/nrow(randomPopulationData)
 # 0.419
 segmentation2MktShare = nrow(subset(randomPopulationData,randomPopulationData$clusterNo == 2))/nrow(randomPopulationData)
