@@ -263,15 +263,15 @@ sum(incomeAllocation$segment_3) # 67268.09
 
 
 
-
-
-# ????????????????????????????
 # estimate market size
+segmentation1MktShare = nrow(subset(customerData,customerData$clusterNo == 1))/nrow(customerData)
+segmentation1MktShare # 0.38275
+segmentation2MktShare = nrow(subset(customerData,customerData$clusterNo == 2))/nrow(customerData)
+segmentation2MktShare # 0.3636
+segmentation3MktShare = nrow(subset(customerData,customerData$clusterNo == 3))/nrow(customerData)
+segmentation3MktShare #  0.25365
+
+
+
+# prediction?
 randomData=read.csv("./Bank/Random Database.csv", stringsAsFactors=T)
-randomData$clusterNo = km2$cluster
-segmentation1MktShare = nrow(subset(randomPopulationData,randomPopulationData$clusterNo == 1))/nrow(randomPopulationData)
-# 0.419
-segmentation2MktShare = nrow(subset(randomPopulationData,randomPopulationData$clusterNo == 2))/nrow(randomPopulationData)
-# 0.43065
-segmentation3MktShare = nrow(subset(randomPopulationData,randomPopulationData$clusterNo == 3))/nrow(randomPopulationData)
-# 0.15035
