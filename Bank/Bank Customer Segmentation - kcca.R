@@ -5,11 +5,13 @@ customerData=read.csv("./Bank/Customer Database.csv", stringsAsFactors=T)
 str(customerData)
 
 # change variable zip_code, county_code and occupation from integer to factor
+customerData[,1] = as.factor(customerData[,1]) # zip_code
+customerData[,2] = as.factor(customerData[,2]) # country_code
+customerData[,12] = as.factor(customerData[,12]) # occupation
+summary(customerData)
+save.image(file = "Bank.RData")
+
 customerDataPrep = customerData
-customerDataPrep[,1] = as.factor(customerDataPrep[,1]) # zip_code
-customerDataPrep[,2] = as.factor(customerDataPrep[,2]) # country_code
-customerDataPrep[,12] = as.factor(customerDataPrep[,12]) # occupation
-summary(customerDataPrep)
 
 # drop variables not used in the following segmentation modeling
 drop = c("zip_code","county_code","county_name","income","occupation",
@@ -88,82 +90,129 @@ head(fa1$scores)
 
 
 # combine string variables with first 5 components together for kcca clustering
-customerDataPrep = cbind(customerDataPrep[,1:4],pca.out$x[,1:5])
+customerDataPrep = as.matrix(cbind(customerDataPrep[,1:4],pca.out$x[,1:5]))
 
+# define distance function which calculate distance between 2 observations
 
+# if "city"(column 1) is different, return 1, else return 0
+# if "state"(column 2) is different, return 1, else return 0
+# if "gender"(column 3) is different, return 1, else return 0, 
+#   for any comparations with NA records, return 0.5
+# if "marital_status"(column 4) is different, return 1, else return 0
+#   for any comparations with NA records, return 0.5
 
+# other columns' distance is calculated by absloute difference of 2 numbers
+# the total distance is sum of all columns' distances
 
-
-
-
-
-
-
-
-
-
-# k-means segmentation 
-
-# define how many clusters should be used
-
-# approach 1: pamk()
-pm = pamk(numericVariablesScaled,scaling=T, usepam = F, criterion="multiasw")
-pm$nc
-# 2 clusters
-
-# approach 2: wss plot 
-library(cluster) 
-library(fpc)
-# set.seed(123)
-
-wss = (nrow(numericVariablesScaled)-1)*sum(apply(numericVariablesScaled,2,var))
-for (i in 1:ncol(numericVariablesScaled)) wss[i] = sum(kmeans(numericVariablesScaled,centers=i)$withinss)
-plot(1:ncol(numericVariablesScaled), wss, type="b", xlab="Number of Clusters",ylab="Within groups sum of squares")
-#found 2,3,4 clusters maybe suitable in segmentation
-
-
-# use first 5 principal components to do the clustering
-
-#plot
-km1 = kmeans(pca.out$x[,1:5],2,iter.max = 20, nstart=2)
-# first 6 components, 2 clusters
-km2 = kmeans(pca.out$x[,1:5],3,iter.max = 20, nstart=2)
-km3 = kmeans(pca.out$x[,1:5],4,iter.max = 20, nstart=2)
-
-clusplot(pca.out$x[,1:6], km1$cluster, color=TRUE, shade=TRUE, labels=2, lines=0)
-plotcluster(pca.out$x[,1:6], km1$cluster)
-clusplot(pca.out$x[,1:6], km2$cluster, color=TRUE, shade=TRUE, labels=2, lines=0)
-plotcluster(pca.out$x[,1:6], km2$cluster)# the clearest one
-clusplot(pca.out$x[,1:6], km3$cluster, color=TRUE, shade=TRUE, labels=2, lines=0)
-plotcluster(pca.out$x[,1:6], km3$cluster)
-
-percsize = paste(1:3," = ",format(km1$size/sum(km1$size)*100,digits=2),"%",sep="")
-pie(km1$size,labels=percsize)
-# segment 1 consists 38% of total records
-# segment 2 consists 24% of total records
-# segment 3 consists 38% of total records
-
-km1$centers
-scaledCenters = km1$centers
-
-# scale back cluster centers
-options(scipen = 999)
-for (i in 1:ncol(scaledCenters)){
-  Centers[,i] = sd(customerDataPrep[,i])*scaledCenters[,i] + mean(customerDataPrep[,i])
+distance = function(x,y) {
+  if (x[1] == y[1] & x[2] == y[2])
+    d1 = 0
+  else if (x[1] != y[1] & x[2] == y[2])
+    d1 = 0.5
+  else
+    d1 = 1
+  
+  if (x[3] == '') 
+    d3 = 0.5
+  else if (y[3] == '')
+    d3 = 0.5
+  else if (x[3] == y[3])
+    d3 = 0
+  else
+    d3 = 1
+  
+  if (x[4] == '') 
+    d4 = 0.5
+  else if (y[4] == '')
+    d4 = 0.5
+  else if (x[4] == y[4])
+    d4 = 0
+  else
+    d4 = 1
+  
+  d5 = abs(as.numeric(x[5])-as.numeric(y[5]))
+  d6 = abs(as.numeric(x[6])-as.numeric(y[6]))
+  d7 = abs(as.numeric(x[7])-as.numeric(y[7]))
+  d8 = abs(as.numeric(x[8])-as.numeric(y[8]))
+  d9 = abs(as.numeric(x[9])-as.numeric(y[9]))
+  
+  dis = d1 + d3 + d4 + d5 + d6 + d7 + d8 + d9
+  return(dis)
 }
-View(Centers)
+
+# test
+distance(customerDataPrep[1,], customerDataPrep[2,])
+distance(customerDataPrep[34,], customerDataPrep[34,])
+distance(customerDataPrep[43,], customerDataPrep[43,])
+
+
+# create pair-wise distance matrix
+distanceMatrix = function(m1,m2) {
+  m = matrix(
+    rep(NA,nrow(m1)*nrow(m2)), 
+    nrow=nrow(m1), 
+    ncol=nrow(m2)
+  )
+  
+  for (i in 1:nrow(m1)){
+    for (j in 1:nrow(m2)){
+      m[i,j] = distance(m1[i,],m2[j,])
+    }
+  }
+  
+  return(m)
+}
+
+# test
+distanceMatrix(customerDataPrep[1:2,], customerDataPrep[1:2,])
+
+
+# define cluster center
+# pick the most frequently showed city/state/gender/marital_status as center
+# calculate mean of other numeric variables as center
+centroid = function(m) {
+  city = tail(names(sort(table(m[,1]))), 1)
+  state = tail(names(sort(table(m[,2]))), 1)
+  gender = tail(names(sort(table(m[,3]))), 1)
+  marital_status = tail(names(sort(table(m[,4]))), 1)
+  PC1 = mean(as.numeric(m[,5]))
+  PC2 = mean(as.numeric(m[,6]))
+  PC3 = mean(as.numeric(m[,7]))
+  PC4 = mean(as.numeric(m[,8]))
+  PC5 = mean(as.numeric(m[,9]))
+  
+  p = cbind(city,state,gender,marital_status,PC1,PC2,PC3,PC4,PC5)
+  return(p)
+}
+
+#test
+centroid(customerDataPrep[1:2,])
+
+
+# define kccaFamily with previous self-built functions
+cheng = kccaFamily(which=NULL, dist=distanceMatrix, cent=centroid, name="cheng",
+                   preproc = NULL, trim=0, groupFun = "minSumClusters")
+
+# run k-means clustering using the customized cheng function
+k = kcca(customerDataPrep, 3, family=cheng, weights=NULL, group=NULL,
+         control=NULL, simple=FALSE, save.data=FALSE)
+k
+k@centers
+summary(k)
 
 
 
-# go back to the complete data table to check each segment's traits and preferences
-customerData$clusterNo = km2$cluster
-
-write.csv(x=customerData,file = "./customerDataWithCluster.csv",row.names = TRUE)
-
+# bring cluster NO. back to the complete data table to check each segment's traits and preferences
+customerData$clusterNo = clusters(k)
+summary(customerData)
+write.csv(x=customerData,file = "./Bank/customerDataWithCluster.csv",row.names = TRUE)
 
 segmentation1 = subset(customerData,customerData$clusterNo == 1)
 segmentation2 = subset(customerData,customerData$clusterNo == 2)
 segmentation3 = subset(customerData,customerData$clusterNo == 3)
+summary(segmentation1)
+summary(segmentation2)
+summary(segmentation3)
 
 # check customers' interest (percentage)
 a = c("great_outdoors","sporting_life","health_fitness","luxury_life","doit_yourselfer","truck_owner","motor_cycle","sports","entertainment_enth","hobbyists",
@@ -192,6 +241,7 @@ b = c("AAPPAREL","ACASHCONT","AEDUCATN","AENTRTAIN","AFOODTOTL","AGTOTALE","AHEA
 segment_1 = rep(NA,11)
 segment_2 = rep(NA,11)
 segment_3 = rep(NA,11)
+
 incomeAllocation = data.frame(row.names=b,segment_1,segment_2,segment_3)
 
 #segment1
@@ -207,10 +257,9 @@ for (i in 56:66) {
 View(incomeAllocation)
 
 
-sum(incomeAllocation$segment_1) # 67517.75
-sum(incomeAllocation$segment_2) # 66179.98
-sum(incomeAllocation$segment_3) # 67439.29
-
+sum(incomeAllocation$segment_1) # 67830.1
+sum(incomeAllocation$segment_2) # 66028.58
+sum(incomeAllocation$segment_3) # 67268.09
 
 
 

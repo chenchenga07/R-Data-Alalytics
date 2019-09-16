@@ -56,10 +56,10 @@ distanceMatrix(test, test)
 # define cluster center
 # pick the most frequently showed city as center
 # calculate mean of income and rating as center
-centroid = function(df) {
-  city = tail(names(sort(table(df[,1]))), 1)
-  income = mean(as.numeric(df[,2]))
-  rating = mean(as.numeric(df[,3]))
+centroid = function(m) {
+  city = tail(names(sort(table(m[,1]))), 1)
+  income = mean(as.numeric(m[,2]))
+  rating = mean(as.numeric(m[,3]))
   p = cbind(city,income,rating)
   return(p)
 }
