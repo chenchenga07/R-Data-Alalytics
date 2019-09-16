@@ -2,6 +2,7 @@ setwd("/Users/chencheng/Desktop/R Review/Github/R")
 
 ### load and prepare the data
 customerData=read.csv("./Bank/Customer Database.csv", stringsAsFactors=T)
+customerData=read.csv("./Customer Database.csv", stringsAsFactors=T)
 str(customerData)
 
 # change variable zip_code, county_code and occupation from integer to factor
@@ -14,38 +15,48 @@ save.image(file = "Bank.RData")
 customerDataPrep = customerData
 
 # drop variables not used in the following segmentation modeling
-drop = c("zip_code","county_code","county_name","income","occupation",
-         "child0_3","child4_6","child7_9","child10_11","child13_18","home_owner","dwelling_type",
+drop = c("zip_code","county_code","county_name","income","num_of_adults","children",
+         "child0_3","child4_6","child7_9","child10_11","child13_18",
          "great_outdoors","sporting_life","health_fitness","luxury_life","doit_yourselfer","truck_owner","motor_cycle","sports","entertainment_enth","hobbyists",
          "avid_readers","collectors","travel","pets","music","toys","art_craft","gardening","family","food","cars","casino_gambling","contributors",
          "travel_business","travel_personal","travel_vacation","donor_arts_or_cultural",
          "AAPPAREL","ACASHCONT","AEDUCATN","AENTRTAIN","AFOODTOTL","AGTOTALE","AHEALTH","AHOUSING","AINSPENSN","AREADING","ATRANS")
 
 customerDataPrep = customerDataPrep[,!(names(customerDataPrep) %in% drop)]
+summary(customerDataPrep)
 
-# replace year_structure NA with median 
+# replace NA in education_code, year_structure with median
+customerDataPrep$education_code = 
+  ifelse(is.na(customerDataPrep$education_code), median(customerDataPrep$education_code,na.rm = T), 
+         customerDataPrep$education_code)
+
 customerDataPrep$year_structure = 
   ifelse(is.na(customerDataPrep$year_structure), median(customerDataPrep$year_structure,na.rm = T), 
          customerDataPrep$year_structure)
 
-# replace NA with 0 in some columns
-c = c("education_code","children","contributor_index")
-customerDataPrep[c][is.na(customerDataPrep[c])] = 0
+customerDataPrep$contributor_index = 
+  ifelse(is.na(customerDataPrep$contributor_index), median(customerDataPrep$contributor_index,na.rm = T), 
+         customerDataPrep$contributor_index)
+
 summary(customerDataPrep)
 
-# drop NA records
-customerDataPrep = customerDataPrep[complete.cases(customerDataPrep),]
 
+# reorder columns
+# categorical variables first, numerical variables last
+customerDataPrep = customerDataPrep[,c(1,2,3,4,8,11,12,5,6,7,9,10,13,14,15,16)]
+customerDataPrepCopy = customerDataPrep
 
 # rescale all numeric variables
+options(scipen = 999)
+
 rescale = function(r) {
   if (sd(r) != 0) 
     res = (r - mean(r))/sd(r) else res = 0 * r
     return(res)
 }
 
-numericVariablesScaled = apply(customerDataPrep[,5:15],2,rescale)
-customerDataPrep = cbind(customerDataPrep[,1:4],numericVariablesScaled)
+numericVariablesScaled = apply(customerDataPrep[,8:16],2,rescale)
+customerDataPrep = cbind(customerDataPrep[,1:7],numericVariablesScaled)
 
 save.image(file="Bank.Rdata")
 
@@ -59,10 +70,7 @@ summary(pca.out)
 # check cucumlative proportion
 # first 5 components explain around 70% of variances
 # PC1 highly related with num_in_hhld(-), num_of_children(-)
-# PC2 highly related with age, len_of_residence
-# PC3 highly related with contributor_index(-), education_code(-)
-# PC4 highly related with year_structure, median_home_value(-)
-# PC5 highly related with median_income(-)
+# ...
 
 plot(pca.out) 
 # check how many components' variances are above 1 / has big drop
@@ -83,22 +91,15 @@ fa1 = factanal(numericVariablesScaled,factors = 5,rotation = "varimax", scores =
 fa1
 head(fa1$scores)
 # factor1 highly related with num_of_children, children, num_in_hhld
-# factor2 highly related with num_of_adults, num_in_hhld
-# factor3 highly related with age, education_code
-# factor4 highly related with contributor_index
-# factor5 highly related with median_home_value
+# .....
 
 
 # combine string variables with first 5 components together for kcca clustering
-customerDataPrep = as.matrix(cbind(customerDataPrep[,1:4],pca.out$x[,1:5]))
+customerDataPrep = as.matrix(cbind(customerDataPrep[,1:7],pca.out$x[,1:5]))
 
 # define distance function which calculate distance between 2 observations
 
-# if "city"(column 1) is different, return 1, else return 0
-# if "state"(column 2) is different, return 1, else return 0
-# if "gender"(column 3) is different, return 1, else return 0, 
-#   for any comparations with NA records, return 0.5
-# if "marital_status"(column 4) is different, return 1, else return 0
+# ...
 #   for any comparations with NA records, return 0.5
 
 # other columns' distance is calculated by absloute difference of 2 numbers
@@ -112,38 +113,52 @@ distance = function(x,y) {
   else
     d1 = 1
   
-  if (x[3] == '') 
-    d3 = 0.5
-  else if (y[3] == '')
+  if (x[3] == '' | y[3] == '') 
     d3 = 0.5
   else if (x[3] == y[3])
     d3 = 0
   else
     d3 = 1
   
-  if (x[4] == '') 
-    d4 = 0.5
-  else if (y[4] == '')
+  if (x[4] == ''| y[4] == '') 
     d4 = 0.5
   else if (x[4] == y[4])
     d4 = 0
   else
     d4 = 1
   
-  d5 = abs(as.numeric(x[5])-as.numeric(y[5]))
-  d6 = abs(as.numeric(x[6])-as.numeric(y[6]))
-  d7 = abs(as.numeric(x[7])-as.numeric(y[7]))
+  if (x[5] == 0 | y[5] == 0) 
+    d5 = 0.5
+  else if (x[5] == y[5])
+    d5 = 0
+  else
+    d5 = 1
+  
+  if (x[6] == ''| y[6] == '') 
+    d6 = 0.5
+  else if (x[6] == y[6])
+    d6 = 0
+  else
+    d6 = 1
+  
+  if (x[7] == y[7]) 
+    d7 = 0
+  else
+    d7 = 1
+  
   d8 = abs(as.numeric(x[8])-as.numeric(y[8]))
   d9 = abs(as.numeric(x[9])-as.numeric(y[9]))
+  d10 = abs(as.numeric(x[10])-as.numeric(y[10]))
+  d11 = abs(as.numeric(x[11])-as.numeric(y[11]))
+  d12 = abs(as.numeric(x[12])-as.numeric(y[12]))
   
-  dis = d1 + d3 + d4 + d5 + d6 + d7 + d8 + d9
+  dis = d1+d3+d4+d5+d6+d7+d8+d9+d10+d11+d12
   return(dis)
 }
 
 # test
 distance(customerDataPrep[1,], customerDataPrep[2,])
 distance(customerDataPrep[34,], customerDataPrep[34,])
-distance(customerDataPrep[43,], customerDataPrep[43,])
 
 
 # create pair-wise distance matrix
@@ -175,13 +190,16 @@ centroid = function(m) {
   state = tail(names(sort(table(m[,2]))), 1)
   gender = tail(names(sort(table(m[,3]))), 1)
   marital_status = tail(names(sort(table(m[,4]))), 1)
-  PC1 = mean(as.numeric(m[,5]))
-  PC2 = mean(as.numeric(m[,6]))
-  PC3 = mean(as.numeric(m[,7]))
-  PC4 = mean(as.numeric(m[,8]))
-  PC5 = mean(as.numeric(m[,9]))
+  occupation = tail(names(sort(table(m[,5]))), 1)
+  home_owner = tail(names(sort(table(m[,6]))), 1)
+  dwelling_type = tail(names(sort(table(m[,7]))), 1)
+  PC1 = mean(as.numeric(m[,8]))
+  PC2 = mean(as.numeric(m[,9]))
+  PC3 = mean(as.numeric(m[,10]))
+  PC4 = mean(as.numeric(m[,11]))
+  PC5 = mean(as.numeric(m[,12]))
   
-  p = cbind(city,state,gender,marital_status,PC1,PC2,PC3,PC4,PC5)
+  p = cbind(city,state,gender,marital_status,occupation,home_owner,dwelling_type,PC1,PC2,PC3,PC4,PC5)
   return(p)
 }
 
@@ -190,15 +208,30 @@ centroid(customerDataPrep[1:2,])
 
 
 # define kccaFamily with previous self-built functions
+install.packages("flexclust")
+library(flexclust)
+
 cheng = kccaFamily(which=NULL, dist=distanceMatrix, cent=centroid, name="cheng",
                    preproc = NULL, trim=0, groupFun = "minSumClusters")
 
+set.seed(123)
 # run k-means clustering using the customized cheng function
 k = kcca(customerDataPrep, 3, family=cheng, weights=NULL, group=NULL,
          control=NULL, simple=FALSE, save.data=FALSE)
 k
 k@centers
 summary(k)
+
+# cluster info:
+#   size  
+# 1 5634
+# 2 9645
+# 3 4721
+
+#      city            state gender marital_status occupation home_owner dwelling_type                  
+# [1,] "San Francisco" "CA"  "F"    "S"            "0"        "Y"        "S"          
+# [2,] "Los Angeles"   "CA"  "M"    "M"            "0"        "Y"        "S"          
+# [3,] "San Jose"      "CA"  "M"    "M"            "0"        "Y"        "S"         
 
 
 
@@ -210,10 +243,37 @@ write.csv(x=customerData,file = "./Bank/customerDataWithCluster.csv",row.names =
 segmentation1 = subset(customerData,customerData$clusterNo == 1)
 segmentation2 = subset(customerData,customerData$clusterNo == 2)
 segmentation3 = subset(customerData,customerData$clusterNo == 3)
-summary(segmentation1)
-summary(segmentation2)
-summary(segmentation3)
 
+
+# check some numerica variables' segment centers
+m = c("age","median_income","education_code","num_in_hhld","num_of_children", 
+      "child0_3","child4_6","child7_9","child10_11","child13_18",
+      "year_structure","median_home_value","len_of_residence","contributor_index")
+m1 = c("age","median_income","education_code","num_in_hhld","num_of_children",
+       "year_structure","median_home_value","len_of_residence","contributor_index")
+m2 = c("child0_3","child4_6","child7_9","child10_11","child13_18")
+
+segment1 = rep(NA,14)
+segment2 = rep(NA,14)
+segment3 = rep(NA,14)
+numVarCenter = data.frame(row.names = m,segment1,segment2,segment3)
+
+for (i in m1){
+  numVarCenter[i,1] = mean(segmentation1[[i]],na.rm = T)
+  numVarCenter[i,2] = mean(segmentation2[[i]],na.rm = T)
+  numVarCenter[i,3] = mean(segmentation3[[i]],na.rm = T)
+}
+
+for (i in m2){
+  numVarCenter[i,1] = (nrow(subset(segmentation1,segmentation1[,i] == 1))/nrow(segmentation1))*100
+  numVarCenter[i,2] = (nrow(subset(segmentation2,segmentation2[,i] == 1))/nrow(segmentation2))*100
+  numVarCenter[i,3] = (nrow(subset(segmentation3,segmentation3[,i] == 1))/nrow(segmentation3))*100
+}
+
+View(numVarCenter)
+
+
+  
 # check customers' interest (percentage)
 a = c("great_outdoors","sporting_life","health_fitness","luxury_life","doit_yourselfer","truck_owner","motor_cycle","sports","entertainment_enth","hobbyists",
       "avid_readers","collectors","travel","pets","music","toys","art_craft","gardening","family","food","cars","casino_gambling","contributors",
@@ -257,22 +317,14 @@ for (i in 56:66) {
 View(incomeAllocation)
 
 
-sum(incomeAllocation$segment_1) # 67830.1
-sum(incomeAllocation$segment_2) # 66028.58
-sum(incomeAllocation$segment_3) # 67268.09
+sum(incomeAllocation$segment_1) # 65858.33
+sum(incomeAllocation$segment_2) # 67816.48
+sum(incomeAllocation$segment_3) # 67410.42
 
-
-
-# estimate market size
-segmentation1MktShare = nrow(subset(customerData,customerData$clusterNo == 1))/nrow(customerData)
-segmentation1MktShare # 0.38275
-segmentation2MktShare = nrow(subset(customerData,customerData$clusterNo == 2))/nrow(customerData)
-segmentation2MktShare # 0.3636
-segmentation3MktShare = nrow(subset(customerData,customerData$clusterNo == 3))/nrow(customerData)
-segmentation3MktShare #  0.25365
 
 
 
 # prediction?
-randomData=read.csv("./Bank/Random Database.csv", stringsAsFactors=T)
-
+# should prepare data set into customerDataPrep format first
+randomDataTest = customerDataPrep[1:100,]
+pred_test = predict(k, newdata=randomDataTest)
