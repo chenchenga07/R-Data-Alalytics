@@ -275,3 +275,4 @@ segmentation3MktShare #  0.25365
 
 # prediction?
 randomData=read.csv("./Bank/Random Database.csv", stringsAsFactors=T)
+
