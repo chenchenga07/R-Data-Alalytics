@@ -2,7 +2,6 @@ setwd("/Users/chencheng/Desktop/R Review/Github/R")
 
 ### load and prepare the data
 customerData=read.csv("./Bank/Customer Database.csv", stringsAsFactors=T)
-customerData=read.csv("./Customer Database.csv", stringsAsFactors=T)
 str(customerData)
 
 # change variable zip_code, county_code and occupation from integer to factor
@@ -10,7 +9,6 @@ customerData[,1] = as.factor(customerData[,1]) # zip_code
 customerData[,2] = as.factor(customerData[,2]) # country_code
 customerData[,12] = as.factor(customerData[,12]) # occupation
 summary(customerData)
-save.image(file = "Bank.RData")
 
 customerDataPrep = customerData
 
@@ -94,6 +92,7 @@ head(fa1$scores)
 # .....
 
 
+# use principal component analysis (PCA)'s result in this case
 # combine string variables with first 5 components together for kcca clustering
 customerDataPrep = as.matrix(cbind(customerDataPrep[,1:7],pca.out$x[,1:5]))
 
@@ -214,24 +213,21 @@ library(flexclust)
 cheng = kccaFamily(which=NULL, dist=distanceMatrix, cent=centroid, name="cheng",
                    preproc = NULL, trim=0, groupFun = "minSumClusters")
 
-set.seed(123)
+set.seed(23)
 # run k-means clustering using the customized cheng function
 k = kcca(customerDataPrep, 3, family=cheng, weights=NULL, group=NULL,
          control=NULL, simple=FALSE, save.data=FALSE)
 k
-k@centers
 summary(k)
-
 # cluster info:
-#   size  
-# 1 5634
-# 2 9645
-# 3 4721
+#         1    2    3 
+# size 6804 4309 8887 
 
+k@centers
 #      city            state gender marital_status occupation home_owner dwelling_type                  
-# [1,] "San Francisco" "CA"  "F"    "S"            "0"        "Y"        "S"          
-# [2,] "Los Angeles"   "CA"  "M"    "M"            "0"        "Y"        "S"          
-# [3,] "San Jose"      "CA"  "M"    "M"            "0"        "Y"        "S"         
+# [1,] "San Francisco" "CA"  "M"    "M"            "0"        "Y"        "S"          
+# [2,] "San Jose"      "CA"  "M"    "M"            "0"        "Y"        "S"          
+# [3,] "Los Angeles"   "CA"  "F"    "M"            "0"        "Y"        "S"        
 
 
 
@@ -305,21 +301,21 @@ segment_3 = rep(NA,11)
 incomeAllocation = data.frame(row.names=b,segment_1,segment_2,segment_3)
 
 #segment1
-for (i in 56:66) {
-  incomeAllocation[i-55,1]=sum(segmentation1[i],na.rm=T)/nrow(segmentation1)}
+for (i in 55:65) {
+  incomeAllocation[i-54,1] = mean(segmentation1[[i]],na.rm = T)}
 #segment2
-for (i in 56:66) {
-  incomeAllocation[i-55,2]=sum(segmentation2[i],na.rm=T)/nrow(segmentation2)}
+for (i in 55:65) {
+  incomeAllocation[i-54,2] = mean(segmentation2[[i]],na.rm = T)}
 #segment3
-for (i in 56:66) {
-  incomeAllocation[i-55,3]=sum(segmentation3[i],na.rm=T)/nrow(segmentation3)}
+for (i in 55:65) {
+  incomeAllocation[i-54,3] = mean(segmentation3[[i]],na.rm = T)}
 
 View(incomeAllocation)
 
 
-sum(incomeAllocation$segment_1) # 65858.33
-sum(incomeAllocation$segment_2) # 67816.48
-sum(incomeAllocation$segment_3) # 67410.42
+sum(incomeAllocation$segment_1) # 
+sum(incomeAllocation$segment_2) #
+sum(incomeAllocation$segment_3) #
 
 
 
