@@ -59,13 +59,10 @@ customerDataPrep = customerDataPrep[,c(1,2,3,4,8,11,12,5,6,7,9,10,13,14,15,16)]
 customerDataPrepCopy = customerDataPrep
 ```
 
-### disable scientific notation
-```
-options(scipen = 999)
-```
-
 ### rescale all numeric variables
 ```
+options(scipen = 999) # disable scientific notation
+
 rescale = function(r) {
   if (sd(r) != 0) 
     res = (r - mean(r))/sd(r) else res = 0 * r
@@ -78,6 +75,8 @@ customerDataPrep = cbind(customerDataPrep[,1:7],numericVariablesScaled)
 save.image(file="Bank.Rdata")
 ```
 
+customerDataPrep
+# Image
 
 ## Part 2: Convert Multiple Numeric Variables into a Smaller Group of Components/Factors for the Following Modeling
 
@@ -268,6 +267,7 @@ save.image(file="Bank_Kcca.Rdata")
 |   size|6804|4309|8887| 
 
 k@centers
+
 |city            |state|gender|marital_status|occupation|home_owner|dwelling_type|
 |----------------|-----|------|--------------|----------|----------|-------------|
 |San Francisco   |   CA|  M   |             M|         0|         Y|            S|          
@@ -284,7 +284,7 @@ write.csv(x=customerData,file = "./customerDataWithCluster.csv",row.names = TRUE
 segmentation1 = subset(customerData,customerData$clusterNo == 1)
 segmentation2 = subset(customerData,customerData$clusterNo == 2)
 segmentation3 = subset(customerData,customerData$clusterNo == 3)
-
+```
 ### check some numerica variables' segment centers
 ```
 m = c("age","median_income","education_code","num_in_hhld","num_of_children", 
@@ -313,7 +313,6 @@ for (i in m2){
 
 View(numVarCenter)
 ```
-
   
 ### check customers' interest (percentage)
 ```
