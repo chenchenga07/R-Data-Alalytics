@@ -1,7 +1,7 @@
-setwd("/Users/chencheng/Desktop/R Review/Github/R")
+setwd("/Users/chencheng/Desktop/R Review/Github/R/Bank")
 
 ### load and prepare the data
-customerData=read.csv("./Bank/Customer Database.csv", stringsAsFactors=T)
+customerData=read.csv("./Customer Database.csv", stringsAsFactors=T)
 str(customerData)
 
 # change variable zip_code, county_code and occupation from integer to factor
@@ -16,7 +16,7 @@ customerDataPrep = dummy.data.frame(customerDataPrep, names = c("gender","marita
 
 # drop variables not used in the following segmentation modeling
 drop = c("zip_code","county_code","city","state","county_name","gender","marital_status","income","occupation",
-         "child0_3","child4_6","child7_9","child10_11","child13_18","home_owner","dwelling_type",
+         "child0_3","child4_6","child7_9","child10_12","child13_18","home_owner","dwelling_type",
          "great_outdoors","sporting_life","health_fitness","luxury_life","doit_yourselfer","truck_owner","motor_cycle","sports","entertainment_enth","hobbyists",
          "avid_readers","collectors","travel","pets","music","toys","art_craft","gardening","family","food","cars","casino_gambling","contributors",
          "travel_business","travel_personal","travel_vacation","donor_arts_or_cultural",
@@ -206,14 +206,17 @@ sum(incomeAllocation$segment_3) # 67439.29
 
 
 
+# prediction
 
-# ????????????????????????????
-# estimate market size
 randomData=read.csv("./Bank/Random Database.csv", stringsAsFactors=T)
-randomData$clusterNo = km2$cluster
-segmentation1MktShare = nrow(subset(randomPopulationData,randomPopulationData$clusterNo == 1))/nrow(randomPopulationData)
+# should prepare data set into the same format with pca.out first
+
+randomData$pred_cluster = predict(km2, newdata=randomData)
+
+# estimate market size
+segmentation1MktShare = nrow(subset(randomData,randomData$clusterNo == 1))/nrow(randomData)
 # 0.419
-segmentation2MktShare = nrow(subset(randomPopulationData,randomPopulationData$clusterNo == 2))/nrow(randomPopulationData)
+segmentation2MktShare = nrow(subset(randomData,randomData$clusterNo == 2))/nrow(randomData)
 # 0.43065
-segmentation3MktShare = nrow(subset(randomPopulationData,randomPopulationData$clusterNo == 3))/nrow(randomPopulationData)
+segmentation3MktShare = nrow(subset(randomData,randomData$clusterNo == 3))/nrow(randomData)
 # 0.15035

@@ -1,7 +1,7 @@
-setwd("/Users/chencheng/Desktop/R Review/Github/R")
+setwd("/Users/chencheng/Desktop/R Review/Github/R/Bank")
 
 ### load and prepare the data
-customerData=read.csv("./Bank/Customer Database.csv", stringsAsFactors=T)
+customerData=read.csv("./Customer Database.csv", stringsAsFactors=T)
 str(customerData)
 
 # change variable zip_code, county_code and occupation from integer to factor
@@ -14,7 +14,7 @@ customerDataPrep = customerData
 
 # drop variables not used in the following segmentation modeling
 drop = c("zip_code","county_code","county_name","income","num_of_adults","children",
-         "child0_3","child4_6","child7_9","child10_11","child13_18",
+         "child0_3","child4_6","child7_9","child10_12","child13_18",
          "great_outdoors","sporting_life","health_fitness","luxury_life","doit_yourselfer","truck_owner","motor_cycle","sports","entertainment_enth","hobbyists",
          "avid_readers","collectors","travel","pets","music","toys","art_craft","gardening","family","food","cars","casino_gambling","contributors",
          "travel_business","travel_personal","travel_vacation","donor_arts_or_cultural",
@@ -219,6 +219,7 @@ k = kcca(customerDataPrep, 3, family=cheng, weights=NULL, group=NULL,
          control=NULL, simple=FALSE, save.data=FALSE)
 k
 summary(k)
+save.image(file="Bank_Kcca.Rdata")
 # cluster info:
 #         1    2    3 
 # size 6804 4309 8887 
@@ -234,7 +235,7 @@ k@centers
 # bring cluster NO. back to the complete data table to check each segment's traits and preferences
 customerData$clusterNo = clusters(k)
 summary(customerData)
-write.csv(x=customerData,file = "./Bank/customerDataWithCluster.csv",row.names = TRUE)
+write.csv(x=customerData,file = "./customerDataWithCluster.csv",row.names = TRUE)
 
 segmentation1 = subset(customerData,customerData$clusterNo == 1)
 segmentation2 = subset(customerData,customerData$clusterNo == 2)
@@ -243,11 +244,11 @@ segmentation3 = subset(customerData,customerData$clusterNo == 3)
 
 # check some numerica variables' segment centers
 m = c("age","median_income","education_code","num_in_hhld","num_of_children", 
-      "child0_3","child4_6","child7_9","child10_11","child13_18",
+      "child0_3","child4_6","child7_9","child10_12","child13_18",
       "year_structure","median_home_value","len_of_residence","contributor_index")
 m1 = c("age","median_income","education_code","num_in_hhld","num_of_children",
        "year_structure","median_home_value","len_of_residence","contributor_index")
-m2 = c("child0_3","child4_6","child7_9","child10_11","child13_18")
+m2 = c("child0_3","child4_6","child7_9","child10_12","child13_18")
 
 segment1 = rep(NA,14)
 segment2 = rep(NA,14)
@@ -313,14 +314,6 @@ for (i in 55:65) {
 View(incomeAllocation)
 
 
-sum(incomeAllocation$segment_1) # 
-sum(incomeAllocation$segment_2) #
-sum(incomeAllocation$segment_3) #
-
-
-
-
-# prediction?
-# should prepare data set into customerDataPrep format first
-randomDataTest = customerDataPrep[1:100,]
-pred_test = predict(k, newdata=randomDataTest)
+sum(incomeAllocation$segment_1) # 68151.75
+sum(incomeAllocation$segment_2) # 69816.83
+sum(incomeAllocation$segment_3) # 69970.82
