@@ -198,7 +198,7 @@ View(customerDataPrep)
 
 ## Part 3: Kcca Segmentation Analysis
 
-Because normal K-means clustering can only deal with numerical variables. I choose to use kcca function in this case to have more flexibility.
+Because normal kmeans function can only deal with numerical variables. I choose to use kcca function in this case to have more flexibility.
 
 ### Define distance function which calculates distance between 2 observations
 
@@ -296,8 +296,8 @@ distanceMatrix(customerDataPrep[1:2,], customerDataPrep[1:2,])
 ```
 
 ### Define cluster center
-pick the most frequently showed city/state/gender/marital_status as center
-calculate mean of other numeric variables as center
+Pick the most frequently showed city/state/gender/marital_status as center.
+Calculate mean of other numeric variables as center.
 ```
 centroid = function(m) {
   city = tail(names(sort(table(m[,1]))), 1)
@@ -321,10 +321,10 @@ centroid = function(m) {
 test
 ```
 centroid(customerDataPrep[1:2,])
-#    city            state gender marital_status occupation home_owner dwelling_type          PC1              PC2                          
-#"Palm Beach Gardens" "MA"  "M"    "S"            "38"       "Y"        "S"           "0.551841122465" "1.55828332525" 
-#            PC3              PC4               PC5              
-#"-0.43644767075" "1.014383843825" "-0.171175319835"
+#    city            state gender marital_status occupation home_owner dwelling_type          PC1                                      
+#"Palm Beach Gardens" "MA"  "M"    "S"            "38"       "Y"        "S"           "0.551841122465" 
+#   PC2           PC3              PC4               PC5              
+#"1.55828332525" "-0.43644767075" "1.014383843825" "-0.171175319835"
 ```
 
 ### Define kccaFamily with previous self-built functions
@@ -336,7 +336,7 @@ cheng = kccaFamily(which=NULL, dist=distanceMatrix, cent=centroid, name="cheng",
                    preproc = NULL, trim=0, groupFun = "minSumClusters")
 ```
 
-### Run k-means clustering using the customized "cheng" function
+### Run kcca clustering using the customized "cheng" function
 ```
 set.seed(23)
 k = kcca(customerDataPrep, 3, family=cheng, weights=NULL, group=NULL,
@@ -350,7 +350,9 @@ save.image(file="Bank_Kcca.Rdata")
 |-------|----|----|----|
 |   size|6804|4309|8887| 
 
+```
 k@centers
+```
 
 |city            |state|gender|marital_status|occupation|home_owner|dwelling_type|
 |----------------|-----|------|--------------|----------|----------|-------------|
@@ -364,7 +366,7 @@ k@centers
   * segment 3: they tend to live in LA, female, married, single family home owner
 
 
-## Part 4: Bring cluster NO. Back to the Complete Data Table to Check Each Segment's Traits and Preferences
+## Part 4: Bring cluster No. Back to the Complete Data Table to Check Each Segment's Traits and Preferences
 ```
 customerData$clusterNo = clusters(k)
 summary(customerData)
