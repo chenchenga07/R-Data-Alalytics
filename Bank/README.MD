@@ -13,7 +13,7 @@ customerData=read.csv("./Customer Database.csv", stringsAsFactors=T)
 str(customerData)
 ```
 
-### change variable zip_code, county_code and occupation from integer to factor
+### change zip_code, county_code and occupation variables from integer to factor
 ```
 customerData[,1] = as.factor(customerData[,1]) # zip_code
 customerData[,2] = as.factor(customerData[,2]) # country_code
@@ -38,7 +38,7 @@ customerDataPrep = customerDataPrep[,!(names(customerDataPrep) %in% drop)]
 summary(customerDataPrep)
 ```
 
-### replace NA in education_code, year_structure with median
+### replace NA in education_code, year_structure with median values
 ```
 customerDataPrep$education_code = 
   ifelse(is.na(customerDataPrep$education_code), median(customerDataPrep$education_code,na.rm = T), 
@@ -61,7 +61,7 @@ customerDataPrep = customerDataPrep[,c(1,2,3,4,8,11,12,5,6,7,9,10,13,14,15,16)]
 customerDataPrepCopy = customerDataPrep
 ```
 
-### rescale all numeric variables
+### rescale all numeric variables to standard normal distribution
 ```
 options(scipen = 999) # disable scientific notation
 
@@ -81,13 +81,13 @@ customerDataPrep
 
 ![](images/customerDataPrep.png)
 
+
 ## Part 2: Convert Multiple Numeric Variables into a Smaller Group of Components/Factors for the Following Modeling
 
-### approach 1: principal component analysis (PCA)
+### approach 1: Principal Component Analysis (PCA)
 ```
 pca.out = prcomp(numericVariablesScaled,scale=T)
 summary(pca.out)
-print(pca.out)
 ```
 
 |Importance of components|PC1   |    PC2|    PC3|    PC4|    PC5|    PC6|     PC7|     PC8|     PC9|
@@ -96,7 +96,13 @@ print(pca.out)
 |Proportion of Variance  |0.1923| 0.1439| 0.1389| 0.1147| 0.1112| 0.0944| 0.08941| 0.07928| 0.03587|
 |Cumulative Proportion   |0.1923| 0.3362| 0.4751| 0.5898| 0.7010| 0.7954| 0.88485| 0.96413| 1.00000|
 
+**findings:**
+**first 5 components explain around 70% of variances**
+
 check each component's loadings
+```
+print(pca.out)
+```
 
 |             |PC1        |PC2       |PC3         |PC4        |PC5         |PC6       | PC7       |   PC8     |        PC9|
 |-------------|-----------|----------|------------|-----------|------------|----------|-----------|-----------|-----------|
@@ -111,7 +117,6 @@ check each component's loadings
 |contributor_index|0.09423098|0.13972073|0.701213401|0.01707002|-0.152420559|0.18362601|-0.07597010|0.625954677|-0.158321730|
 
 **findings:**
-**first 5 components explain around 70% of variances**
 **PC1 highly related with num_in_hhld(-), num_of_children(-)**
 **PC2 highly related with median_home_value(+), year_structure(-)**
 **PC3 highly related with contributor_index(+), median_income(-)**
@@ -130,7 +135,7 @@ plot(pca.out)
 
 ![](images/pca.png)
 
-### approach 2: factor analysis
+### approach 2: Exploratory Factor Analysis (EFA)
 ```
 library(GPArotation)
 library(psych)
@@ -145,7 +150,7 @@ parallel analysis suggests that the number of factors =  5
 ```
 fa1 = factanal(numericVariablesScaled,factors = 5,rotation = "varimax", scores = "regression")
 fa1
-head(fa1$scores)
+#head(fa1$scores)
 ```
 
 check the loadings
@@ -178,7 +183,11 @@ check the loadings
 **factor5 highly related with education_code**
 
 ### use principal component analysis (PCA)'s result in this case
-combine string variables with first 5 components together for kcca clustering
+PCA is useful for reducing the number of variables while retaining the most amount of information in the data, whereas EFA is useful for measuring unobserved (latent), error-free variables.
+
+PCA is more suitable in this case.
+
+combine 7 string variables with first 5 components together for kcca clustering
 ```
 customerDataPrep = as.matrix(cbind(customerDataPrep[,1:7],pca.out$x[,1:5]))
 View(customerDataPrep)
@@ -186,10 +195,19 @@ View(customerDataPrep)
 
 ![](images/customerDataPrep3.png)
 
-## Part 3: KCCA Segmentation Analysis
-### define distance function which calculate distance between 2 observations
 
-For any comparations with NA records, return 0.5. Other columns' distance is calculated by absloute difference of 2 numbers. The total distance is the sum of all columns' distance.
+## Part 3: Kcca Segmentation Analysis
+
+Because normal K-means clustering can only deal with numerical variables. I choose to use kcca function in this case to have more flexibility.
+
+### define distance function which calculates distance between 2 observations
+
+For categorical variables, any comparations refer to NA records return 0.5, same values return 0, different values return 1.
+(Except for city and state variables, if city and state are the same return 0, same state different city return 0.5, else return 1)
+
+For numerical variables, calculated by the absloute difference of 2 observations. 
+
+The total distance is the sum of all variables' distances.
 
 ```
 distance = function(x,y) {
@@ -318,7 +336,7 @@ cheng = kccaFamily(which=NULL, dist=distanceMatrix, cent=centroid, name="cheng",
                    preproc = NULL, trim=0, groupFun = "minSumClusters")
 ```
 
-### run k-means clustering using the customized cheng function
+### run k-means clustering using the customized "cheng" function
 ```
 set.seed(23)
 k = kcca(customerDataPrep, 3, family=cheng, weights=NULL, group=NULL,
@@ -387,6 +405,11 @@ View(numVarCenter)
 
 ![](images/numVarCenter.png)
 
+**findings:**
+**segment 1(avg): age 43, annual median income 155k, edu level Some College, num_in_hhld 2, num_of_children 0, home year_structure 1967, median_home_value 483k, len_of_residence 5.5, Propensity To Be A Charitable Donor 4.2 (1~10, 1 is very likely, 10 is least likely)**
+**segment 2(avg): age 44, annual median income 144k, edu level Some College, num_in_hhld 6, num_of_children 3(most likely to be 7~12 years old), home year_structure 1978, median_home_value 584k, len_of_residence 9.5, Propensity To Be A Charitable Donor 3.4**
+**segment 3(avg): age 53, annual median income 151k, edu level Some College, num_in_hhld 4, num_of_children 1(most likely to be 10~18 years old), home year_structure 1965, median_home_value 661k, len_of_residence 11.5, Propensity To Be A Charitable Donor 2.7**
+
 ### check customers' interest (percentage)
 ```
 a = c("great_outdoors","sporting_life","health_fitness","luxury_life","doit_yourselfer","truck_owner","motor_cycle","sports","entertainment_enth","hobbyists",
@@ -411,6 +434,11 @@ View(preference)
 ```
 
 ![](images/preference.png)
+
+**findings:**
+**99% of all 3 segments interest in travel and vacations**
+**segment 2&3 have a more diverse interest, while segment 1's interest rate towards travel, travel_vacation, and avid_readers are the only 3 above 50%.
+**segment 2&3 share lots of the similiar level of interest, except segment 2 has a larget percentage of people who are interested about family compared with segment 3. The difference is around 20%.
 
 ### check income allocation (average)
 ```
@@ -439,3 +467,7 @@ sum(incomeAllocation$segment_3) # 69970.82
 ```
 
 ![](images/incomeAllocation.png)
+
+**findings:**
+**those 3 segments don't have big difference in the estimated income allocation pattern**
+**data source: estimate average 2015 consumer expenditure by ZIP**
