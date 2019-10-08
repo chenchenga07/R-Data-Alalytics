@@ -75,9 +75,8 @@ numericVariablesScaled = apply(customerDataPrep[,8:16],2,rescale)
 customerDataPrep = cbind(customerDataPrep[,1:7],numericVariablesScaled)
 
 save.image(file="Bank.Rdata")
+View(customerDataPrep)
 ```
-
-customerDataPrep
 
 ![](images/customerDataPrep.png)
 
@@ -97,6 +96,7 @@ summary(pca.out)
 |Cumulative Proportion   |0.1923| 0.3362| 0.4751| 0.5898| 0.7010| 0.7954| 0.88485| 0.96413| 1.00000|
 
 **findings:**
+
 **first 5 components explain around 70% of variances**
 
 check each component's loadings
@@ -117,13 +117,18 @@ print(pca.out)
 |contributor_index|0.09423098|0.13972073|0.701213401|0.01707002|-0.152420559|0.18362601|-0.07597010|0.625954677|-0.158321730|
 
 **findings:**
+
 **PC1 highly related with num_in_hhld(-), num_of_children(-)**
+
 **PC2 highly related with median_home_value(+), year_structure(-)**
+
 **PC3 highly related with contributor_index(+), median_income(-)**
+
 **PC4 highly related with age(-), year_structure(-)**
+
 **PC5 highly related with education_code(-)**
 
-check how many components' variances are above 1 / has big drop
+plot out to check
 ```
 plot(pca.out) 
 #optional
@@ -135,6 +140,10 @@ plot(pca.out)
 
 ![](images/pca.png)
 
+**findings:**
+
+**first 5 components' variances are above 1 and there is a drop between component 5&6, I choose to pick the first 5 components**
+
 ### approach 2: Exploratory Factor Analysis (EFA)
 ```
 library(GPArotation)
@@ -144,8 +153,7 @@ fa.parallel(numericVariablesScaled,fa="fa",n.iter=30,main="Scree plots with para
 
 ![](images/factor.png)
 
-sharp breaks in the plot suggest the appropriate number of factors to extract
-parallel analysis suggests that the number of factors =  5 
+Sharp breaks in the plot suggest the appropriate number of factors to extract. Parallel analysis suggests that the number of factors =  5. Set factor number to 5 and run the factor analysis.
 
 ```
 fa1 = factanal(numericVariablesScaled,factors = 5,rotation = "varimax", scores = "regression")
@@ -175,11 +183,17 @@ check the loadings
 |Cumulative Var | 0.162 |  0.234|  0.282|  0.322|  0.336|
 
 **findings:**
+
 **first 5 factors explain around 33.6% of variances**
+
 **factor1 highly related with num_in_hhld**
+
 **factor2 highly related with contributor_index**
-**factor3 highly related with len_of_residence**
+
+**factor3 highly related with age**
+
 **factor4 highly related with median_home_value**
+
 **factor5 highly related with education_code**
 
 ### use principal component analysis (PCA)'s result in this case
@@ -359,8 +373,11 @@ k@centers
 |Los Angeles     |   CA|  F   |             M|         0|         Y|            S|        
 
 **findings:**
+
 **segment 1: they tend to live in SF, male, married, single family home owner**
+
 **segment 2: they tend to live in SJ, male, married, single family home owner**
+
 **segment 3: they tend to live in LA, female, married, single family home owner**
 
 
@@ -406,8 +423,11 @@ View(numVarCenter)
 ![](images/numVarCenter.png)
 
 **findings:**
+
 **segment 1(avg): age 43, annual median income 155k, edu level Some College, num_in_hhld 2, num_of_children 0, home year_structure 1967, median_home_value 483k, len_of_residence 5.5, Propensity To Be A Charitable Donor 4.2 (1~10, 1 is very likely, 10 is least likely)**
+
 **segment 2(avg): age 44, annual median income 144k, edu level Some College, num_in_hhld 6, num_of_children 3(most likely to be 7~12 years old), home year_structure 1978, median_home_value 584k, len_of_residence 9.5, Propensity To Be A Charitable Donor 3.4**
+
 **segment 3(avg): age 53, annual median income 151k, edu level Some College, num_in_hhld 4, num_of_children 1(most likely to be 10~18 years old), home year_structure 1965, median_home_value 661k, len_of_residence 11.5, Propensity To Be A Charitable Donor 2.7**
 
 ### check customers' interest (percentage)
@@ -436,8 +456,11 @@ View(preference)
 ![](images/preference.png)
 
 **findings:**
+
 **99% of all 3 segments interest in travel and vacations**
+
 **segment 2&3 have a more diverse interest, while segment 1's interest rate towards travel, travel_vacation, and avid_readers are the only 3 above 50%.
+
 **segment 2&3 share lots of the similiar level of interest, except segment 2 has a larget percentage of people who are interested about family compared with segment 3. The difference is around 20%.
 
 ### check income allocation (average)
@@ -469,5 +492,7 @@ sum(incomeAllocation$segment_3) # 69970.82
 ![](images/incomeAllocation.png)
 
 **findings:**
+
 **those 3 segments don't have big difference in the estimated income allocation pattern**
+
 **data source: estimate average 2015 consumer expenditure by ZIP**
