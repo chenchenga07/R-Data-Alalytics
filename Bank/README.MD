@@ -1,5 +1,7 @@
 # Bank Existing Customer Segmentation Analysis
 
+![](images/picture.png)
+
 Use a Bank's 20,000 exisiting customers' demographic and interest data to do a segmentation analysis. Providing insights to the bank's new trust product design.
 
 ## Part 1: Prepare the Data
