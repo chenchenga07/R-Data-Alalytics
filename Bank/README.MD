@@ -1,5 +1,7 @@
 # Bank Existing Customer Segmentation Analysis
 
+![](images/picture.png)
+
 Use a Bank's 20,000 exisiting customers' demographic and interest data to do a segmentation analysis. Providing insights to the bank's new trust product design.
 
 ## Part 1: Prepare the Data
@@ -76,7 +78,8 @@ save.image(file="Bank.Rdata")
 ```
 
 customerDataPrep
-# Image
+
+![](images/customerDataPrep.png)
 
 ## Part 2: Convert Multiple Numeric Variables into a Smaller Group of Components/Factors for the Following Modeling
 
@@ -125,12 +128,16 @@ plot(pca.out)
 #plot(cumsum(pca.pve))
 ```
 
+![](images/pca.png)
+
 ### approach 2: factor analysis
 ```
 library(GPArotation)
 library(psych)
 fa.parallel(numericVariablesScaled,fa="fa",n.iter=30,main="Scree plots with parallel analysis")
 ```
+
+![](images/factor.png)
 
 sharp breaks in the plot suggest the appropriate number of factors to extract
 parallel analysis suggests that the number of factors =  5 
@@ -174,8 +181,10 @@ check the loadings
 combine string variables with first 5 components together for kcca clustering
 ```
 customerDataPrep = as.matrix(cbind(customerDataPrep[,1:7],pca.out$x[,1:5]))
+View(customerDataPrep)
 ```
 
+![](images/customerDataPrep3.png)
 
 ## Part 3: KCCA Segmentation Analysis
 ### define distance function which calculate distance between 2 observations
@@ -375,7 +384,9 @@ for (i in m2){
 
 View(numVarCenter)
 ```
-  
+
+![](images/numVarCenter.png)
+
 ### check customers' interest (percentage)
 ```
 a = c("great_outdoors","sporting_life","health_fitness","luxury_life","doit_yourselfer","truck_owner","motor_cycle","sports","entertainment_enth","hobbyists",
@@ -398,6 +409,8 @@ for (i in 27:53) {
 
 View(preference)
 ```
+
+![](images/preference.png)
 
 ### check income allocation (average)
 ```
@@ -424,3 +437,5 @@ sum(incomeAllocation$segment_1) # 68151.75
 sum(incomeAllocation$segment_2) # 69816.83
 sum(incomeAllocation$segment_3) # 69970.82
 ```
+
+![](images/incomeAllocation.png)
