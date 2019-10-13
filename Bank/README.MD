@@ -473,3 +473,12 @@ sum(incomeAllocation$segment_3) # 69970.82
 **Findings:**
   * those 3 segments don't have big difference in the estimated income allocation pattern
   * data source: estimate average 2015 consumer expenditure by ZIP
+  
+
+## Part 5: Visualized by Tableau
+
+![](images/BankDashboard.png)
+
+Tableau Public page link:
+https://public.tableau.com/views/Bankdraft/Dashboard1?:embed=y&:useGuest=true&:display_count=yes&:origin=viz_share_link
+
