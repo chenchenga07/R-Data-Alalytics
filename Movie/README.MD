@@ -88,7 +88,7 @@ finalDBMeans
 
 **findings:**
 
-**1. In gernal Toy Story collection has a higher rating**
+**1. In gerneral Toy Story collection has a higher rating**
 
 **2. ToyStory1 rated the highest and Cars3 rated the lowest**
 
@@ -180,10 +180,10 @@ result[which.min(result$MSE),]
 
 modelSelected = lm(cars3 ~ I(toyStory1^2)+I(toyStory2^2)+cars1+toyStory3+I(cars2^2)+I(cars3^2),data=finalDB)
 mean(predict(modelSelected,data=finalDB))
-# predicted cars ratings' mean: 3.168067
+# predicted Cars3 ratings' mean: 3.168067
 
 mean(finalDB[,7],na.rm = T)
-# actual cars ratings' mean: 3.128425
+# actual Cars3 ratings' mean: 3.128425
 
 t.test(predict(modelSelected,data=finalDB),finalDB[,7])
 # p-value = 0.6944  predicted and actual ratings don't have significant difference
@@ -191,9 +191,8 @@ t.test(predict(modelSelected,data=finalDB),finalDB[,7])
 
 **findings**
 
-**1. Does the slghtly higher predicted rating caused by we only use users who have viewed all 5 previous movies as data source to traing the model?**
+**Does the slghtly higher predicted rating (3.17 VS 3.13) caused by only using users who have viewed all 5 previous movies to train the model? Those people probably are into this movie genre and tend to rate Cars3 high too**
 
-**2. aybe those people are into this movie genre so that they tend to rate Cars3 higher too.**
 
 ## Part 3: Check whether fill NA record with average number could imporve prediction accuracy
 ### compare ratings from people who have & haven't rate all 6 movies
@@ -312,6 +311,4 @@ result2[which.min(result2$MSE),]
 
 **findings**
 
-**1. result2's AIC, BIC, and MSE are larger than result1's**
-
-**2. filling NA with mean will lead to larger variance compared with dropping NA records**
+**Result2's AIC, BIC, and MSE are larger than result1's. Filling NA with mean will lead to larger variance compared with dropping NA records**
