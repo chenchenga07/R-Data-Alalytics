@@ -86,7 +86,7 @@ finalDBMeans
 |---------|---------|--------|---------|--------|--------|
 |3.886649 |3.809977 |3.347277|3.870090 |2.805595|3.128425| 
 
-**findings:**
+**Findings:**
 
 **1. In gerneral Toy Story collection has a higher rating**
 
@@ -107,7 +107,7 @@ cor(x,y,use="pairwise.complete.obs")
 |cars2    |0.2813384|0.3636317|0.7187948|0.3499898|1.0000000|0.7065726|
 |cars3    |0.4119281|0.3800859|0.7421214|0.3699212|0.7065726|1.0000000|
 
-**findings:**
+**Findings:**
 
 **1. movies within the same collection have a higher correlation**
 
@@ -189,7 +189,7 @@ t.test(predict(modelSelected,data=finalDB),finalDB[,7])
 # p-value = 0.6944  predicted and actual ratings don't have significant difference
 ```
 
-**findings**
+**Findings:**
 
 **Does the slghtly higher predicted rating (3.17 VS 3.13) caused by only using users who have viewed all 5 previous movies to train the model? Those people probably are into this movie genre and tend to rate Cars3 high too**
 
@@ -231,7 +231,7 @@ t.test(RatingAll6[,6],notRatingAll6[,6]) #p-value = 0.5949
 t.test(RatingAll6[,7],notRatingAll6[,7]) #p-value = 0.583
 ```
 
-**finding:**
+**Findings:**
 
 **1. The rating difference among those 2 user group for ToyStory1 and Cars1 are statistics significant**
 
@@ -309,6 +309,6 @@ result2[which.min(result2$MSE),]
 # MSEmin = 0.03329003
 ```
 
-**findings**
+**Findings**
 
 **Result2's AIC, BIC, and MSE are larger than result1's. Filling NA with mean will lead to larger variance compared with dropping NA records**
